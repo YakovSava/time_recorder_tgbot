@@ -1,6 +1,6 @@
 from asyncio import run
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.command import Command
@@ -19,8 +19,11 @@ logger.log("Лог инициализирован")
 binder = Binder(config_file='config.json')
 logger.log("Инициализирован класс Binder")
 config = binder.sync_get_config()
+logger.log('Получен лог')
 kvdb = KVDatabase(filename=config['kvdb'])
+logger.log('KVDB инициализирован')
 sqldb = Database(database_name=config['database'])
+logger.log('SQL база данных инициализирована')
 bot = Bot(token=config['token'])
 dp = Dispatcher()
 logger.log("Инициализирован бот и диспетчер")
@@ -32,7 +35,7 @@ async def start_reg(message: Message, state:FSMContext):
 
 @dp.message(StateFilter(StartState.name))
 async def reg_success(message:Message, state:FSMContext):
-    await message.answer(f'Отлично! Вы зарегестрированы как {message.text}!\nВот кнопки по которым предоставляется функционал!', reply_markup=KeyboardDataClass.menu_keyboard)
+    await message.answer(f'Отлично! Вы зарегестрированы как "{message.text}"!\nВот кнопки по которым предоставляется функционал!', reply_markup=KeyboardDataClass.menu_keyboard)
     await state.clear()
 
 @dp.message(F.text == "Я на работе!")
