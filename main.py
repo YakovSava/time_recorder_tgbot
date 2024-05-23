@@ -8,10 +8,17 @@ from aiogram.filters.command import Command
 from plugins.binder import Binder
 from plugins.states import StartState
 from plugins.keyboards import KeyboardDataClass
+from plugins.logger import Logger
+
+logger = Logger(printed=True)
+logger.log("Библиотеки импортированы")
+logger.log("Лог инициализирован")
 
 binder = Binder(config_file='config.json')
+logger.log("Инициализирован класс Binder")
 bot = Bot(token=binder.sync_get_config()['token'])
 dp = Dispatcher()
+logger.log("Инициализирован бот и диспетчер")
 
 @dp.message(Command("start"), StateFilter(None))
 async def start_reg(message: Message, state:FSMContext):
@@ -20,31 +27,33 @@ async def start_reg(message: Message, state:FSMContext):
 
 @dp.message(StateFilter(StartState.name))
 async def reg_success(message:Message, state:FSMContext):
-    await message.answer(f'Отлично! Вы зарегестрированы как {message.text}!\nВот кнопки по которым предоставляется функционал!', keyboard=KeyboardDataClass.menu_keyboard)
+    await message.answer(f'Отлично! Вы зарегестрированы как {message.text}!\nВот кнопки по которым предоставляется функционал!', reply_markup=KeyboardDataClass.menu_keyboard)
     await state.clear()
 
-@dp.callback_query(F.data == "in_job")
-async def in_job(callback:CallbackQuery):
-    await callback.message.answer('Мы записали что вы на работе!')
+@dp.message(F.text == "Я на работе!")
+async def in_job(message:Message):
+    await message.answer('Мы записали что вы на работе!')
 
-@dp.callback_query(F.data == "not_in_job")
-async def not_in_job(callback:CallbackQuery):
-    await callback.message.answer("Мы записали что вы не на работе!")
+@dp.message(F.text == "Я не на работе!")
+async def not_in_job(message:Message):
+    await message.answer("Мы записали что вы не на работе!")
 
-@dp.callback_query(F.data == "stat")
-async def stat_handler(callback:CallbackQuery):
-    await callback.message.answer("В процессе разработки!")
+@dp.message(F.text == "Моя статистика")
+async def stat_handler(message:Message):
+    await message.answer("В процессе разработки!")
 
-@dp.callback_query(F.data == "info")
-async def info_handler(callback:CallbackQuery):
-    await callback.message.answer("В процессе разработки!")
+@dp.message(F.text == "Информация о боте")
+async def info_handler(message:Message):
+    await message.answer("В процессе разработки!")
 
-@dp.callback_query(F.data == "tp")
-async def tp_handler(callback:CallbackQuery):
-    await callback.message.answer("В процессе разработки!")
+@dp.message(F.text == "Техподдержка")
+async def tp_handler(message:Message):
+    await message.answer("В процессе разработки!")
 
 async def main():
+    logger.log("Бот запущен!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+    logger.log("Бот запускается...")
     run(main())
