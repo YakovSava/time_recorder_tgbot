@@ -9,6 +9,8 @@ from plugins.binder import Binder
 from plugins.states import StartState
 from plugins.keyboards import KeyboardDataClass
 from plugins.logger import Logger
+from plugins.database import Database
+from plugins.keyvaluedb import KVDatabase
 
 logger = Logger(printed=True)
 logger.log("Библиотеки импортированы")
@@ -16,7 +18,10 @@ logger.log("Лог инициализирован")
 
 binder = Binder(config_file='config.json')
 logger.log("Инициализирован класс Binder")
-bot = Bot(token=binder.sync_get_config()['token'])
+config = binder.sync_get_config()
+kvdb = KVDatabase(filename=config['kvdb'])
+sqldb = Database(database_name=config['database'])
+bot = Bot(token=config['token'])
 dp = Dispatcher()
 logger.log("Инициализирован бот и диспетчер")
 

@@ -10,6 +10,7 @@ class Database:
         self._db = await connect(database=db_name, check_same_thread=False)
         self._db.row_factory = Row
         self._cursor = await self._db.cursor()
+        await self._create_table()
 
     async def _create_table(self) -> None:
         await self._cursor.execute("""CREATE TABLE IF NOT EXISTS users (
