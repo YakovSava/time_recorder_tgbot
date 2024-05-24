@@ -33,3 +33,7 @@ class Database:
     async def get(self, id: int):
         await self._cursor.execute(f"SELECT * FROM users WHERE id = '{id}'")
         return await self._cursor.fetchone()
+
+    async def get_all(self):
+        await self._cursor.execute(f"SELECT * FROM users")
+        return await self._cursor.fetchall()

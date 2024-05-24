@@ -16,6 +16,12 @@ class KVDatabase:
     def _decode(self, encode_data: str) -> str:
         return "".join(map(lambda x: chr(int(x) >> 5), encode_data.split()))
 
+    async def exists(self, id:int):
+        try:
+            return await self.get(str(id))
+        except:
+            return {'connects': [], 'discovers': []}
+
     async def set(self, key:str, value:Any) -> None:
         data = await self.get_all()
         data[key] = value
@@ -24,11 +30,11 @@ class KVDatabase:
 
     async def get(self, key:str) -> Any:
         async with aiopen(self._filename, 'r', encoding='utf-8') as file:
-            return dict(self._decode(await file.read()))[key]
+            return eval(self._decode(await file.read()))[key]
 
     async def get_all(self) -> dict:
         async with aiopen(self._filename, 'r', encoding='utf-8') as file:
-            return dict(self._decode(await file.read()))
+            return eval(self._decode(await file.read()))
 
     async def delete(self, key:str) -> None:
         data = await self.get_all()
