@@ -1,9 +1,6 @@
-import re
-
-from os.path import exists
 from time import strptime, strftime, struct_time,\
     mktime, gmtime, time
-from pprint import pprint
+from asyncio import gather, create_task
 
 def _today(day:str) -> bool:
     return strftime("%H:%M %d.%m.%y", gmtime(time())).endswith(day)
@@ -110,7 +107,7 @@ def _count_all_the_times_in_all_the_lists(obj:list | float) -> float:
     res = 0.0
     for con, dis in obj:
         res += _to_unix(dis) - _to_unix(con)
-    return abs(round(res / 3600, 2))
+    return abs(round((res / 3600), 2)) if round((res / 3600) < 0) else round(res / 3600)
 
 def _comparison_con_and_discon_on_day(cons:list[str], discons:list[str]) -> tuple | list:
     if len(discons) == 0:
@@ -197,7 +194,7 @@ def _comparison_con_and_discon_on_day(cons:list[str], discons:list[str]) -> tupl
         return associated
 
 
-def _analyze(data:list) -> dict:
+async def _analyze(data:list) -> dict:
     to_ret = {}
 
     for connects, disconnects in zip(*data):
@@ -206,7 +203,7 @@ def _analyze(data:list) -> dict:
     return to_ret
 
 
-def calculate_times(parsed_log: dict) -> dict:
+async def calculate_times(parsed_log: dict) -> dict:
     '''
     return this (example)
     {
@@ -221,6 +218,13 @@ def calculate_times(parsed_log: dict) -> dict:
         prepare[mac] = _remove_all_replit_times(data)
     to_ret = {}
 
+    _temp = []
+    _temp_pref = []
     for mac, val in prepare.items():
-        to_ret[mac] = _analyze(val)
+        _temp_pref.append(mac)
+        _temp.append(create_task(_analyze(val)))
+
+    for i, j in zip(_temp_pref, (await gather(*_temp))):
+        to_ret[i] = j
+
     return to_ret

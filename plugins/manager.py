@@ -9,7 +9,7 @@ class ManagerError(Exception): pass
 class Manager:
 
     def __init__(self, bot:Bot, timer_conf_filename:str=None, sqldb:Database=None):
-        if timer_conf_filename:
+        if timer_conf_filename is None:
             raise ManagerError("Timer config filename not found!")
         if sqldb is None:
             raise ManagerError("SQL Database not found!")

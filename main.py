@@ -8,11 +8,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters.command import Command
 
 from plugins.binder import Binder
-from plugins.states import StartState
+from plugins.states import StartState, TPState
 from plugins.keyboards import KeyboardDataClass
 from plugins.logger import Logger
 from plugins.database import Database
 from plugins.keyvaluedb import KVDatabase
+from plugins.manager import Manager
+
+from analyze_plugins.analyze import calculate_times
 
 logger = Logger(printed=True)
 logger.log("Библиотеки импортированы")
@@ -29,6 +32,8 @@ logger.log('SQL база данных инициализирована')
 bot = Bot(token=config['token'])
 dp = Dispatcher()
 logger.log("Инициализирован бот и диспетчер")
+mngr = Manager(bot, timer_conf_filename=config['time_config'], sqldb=sqldb)
+logger.log("Инициализирован менеджер")
 
 @dp.message(Command("start"), StateFilter(None))
 async def start_reg(message: Message, state:FSMContext):
@@ -67,7 +72,11 @@ async def not_in_job(message:Message):
 @dp.message(F.text == "Моя статистика")
 async def stat_handler(message:Message):
     if await sqldb.exists(message.from_user.id):
-        await message.answer("В процессе разработки!")
+        stat = (await calculate_times(await kvdb.get_all()))[str(message.from_user.id)]
+        msg = "Вы проработали:\n"
+        for date, hours in stat.items():
+            msg += f"{date} - {hours} часа"
+        await message.answer(msg)
     else:
         await message.answer('Я не знаю кто вы, потому не могу дать статистику!\nДавайте зарегистрируемся! Нажмите на:\n\n/start')
 
@@ -89,9 +98,17 @@ __Техническая информация:__
     else:
         await message.answer("Давайте прежде чем получать информацию о боте, зарегистрируемся?\nНапример нажмите сюда:\n\n/start")
 
-@dp.message(F.text == "Техподдержка")
-async def tp_handler(message:Message):
-    await message.answer("В процессе разработки!")
+@dp.message(F.text == "Техподдержка", StateFilter(None))
+async def tp_handler(message:Message, state:FSMContext):
+    await message.answer("Напишите ваш вопрос в техподдержку и вам ответят как можно скорее")
+    await state.set_state(TPState.quest)
+
+@dp.message(StateFilter(TPState.quest))
+async def tp_state_handler(message:Message, state:FSMContext):
+    await message.answer('Ваш вопрос отправлен в техподдержку!')
+    await state.clear()
+    for admin_id in config['admins']:
+        await bot.send_message(chat_id=admin_id, text=f'Вопрос от пользователя <{message.from_user.id}>\n\n{message.text}\n\nОтветить можно командой "answer <id> <ответ>"')
 
 @dp.message(F.text.startswith('admin'))
 async def admin_handler(message:Message):
@@ -99,6 +116,19 @@ async def admin_handler(message:Message):
     if cmds[1] == 'getall':
         await message.answer(f"""* Ответ команды для администрации *
 {await kvdb.get_all()}""", parse_mode=ParseMode.MARKDOWN)
+    elif cmds[1] == 'analyze':
+        await message.answer(f"""* Ответ команды для администрации *
+{await calculate_times(await kvdb.get_all())}""", parse_mode=ParseMode.MARKDOWN)
+
+@dp.message(F.text.startswith('answer'))
+async def admin_answer(message:Message):
+    cn = message.text.split(maxsplit=2)
+    try:
+        await bot.send_message(chat_id=int(cn[1]), text=f'Ответ от администратора:\n{cn[2]}')
+    except:
+        await message.answer('Ответ не отправлен')
+    else:
+        await message.answer('Ответ отправлен!')
 
 async def main():
     logger.log("Бот запущен!")
