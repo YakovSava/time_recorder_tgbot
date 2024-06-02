@@ -119,6 +119,15 @@ async def admin_handler(message:Message):
     elif cmds[1] == 'analyze':
         await message.answer(f"""* Ответ команды для администрации *
 {await calculate_times(await kvdb.get_all())}""", parse_mode=ParseMode.MARKDOWN)
+    elif cmds[1] == 'time':
+        await message.answer(f"""* Ответ команды для администрации *
+Текущее время: {strftime("%H:%M %d.%m.%y")}""", parse_mode=ParseMode.MARKDOWN)
+    elif cmds[1] == 'manager':
+        await message.answer(f"""* Ответ команды для администрации *
+Записанные ID: {await mngr.admin_send_test()}
+** Рассылка выслана! **""", parse_mode=ParseMode.MARKDOWN)
+    else:
+        await message.answer("* Ошибка *\nКоманда не существует", parse_mode=ParseMode.MARKDOWN)
 
 @dp.message(F.text.startswith('answer'))
 async def admin_answer(message:Message):
@@ -133,7 +142,8 @@ async def admin_answer(message:Message):
 async def main():
     logger.log("Бот запущен!")
     await gather(
-        create_task(dp.start_polling(bot))
+        create_task(dp.start_polling(bot)),
+        create_task(mngr.worker())
     )
 
 if __name__ == "__main__":

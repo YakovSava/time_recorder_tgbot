@@ -29,11 +29,16 @@ class Manager:
                 self._noted_ids.clear()
             await sleep(config['timeout'])
 
+    async def admin_send_test(self):
+        config = await self._manager_binder.get_config()
+        await self._mass_sender(config['tested_hello'])
+        return self._noted_ids
+
     async def _mass_sender(self, text:str) -> None:
         ids = await self._sqldb.get_all()
         for id in ids:
-            if id not in self._noted_ids:
-                await self._sender(id, text)
+            if id['id'] not in self._noted_ids:
+                await self._sender(id['id'], text)
 
     async def _sender(self, id:int, text:str) -> None:
         await self._bot.send_message(chat_id=id, text=text)
