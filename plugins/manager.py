@@ -1,8 +1,11 @@
-from time import strftime
+from time import strftime, strptime, mktime, time
 from asyncio import sleep
 from aiogram import Bot
 from plugins.binder import Binder
 from plugins.database import Database
+
+def gettime(t):
+	return mktime(strptime(strftime("%d.%m.%y ")+t, "%d.%m.%y %H:%M"))
 
 class ManagerError(Exception): pass
 
@@ -21,7 +24,7 @@ class Manager:
     async def worker(self) -> None:
         while True:
             config = await self._manager_binder.get_config()
-            if strftime("%H:%M") in config['morning']:
+            if (strftime("%H:%M") in config['morning']) or (time() > gettime(config['morning'][-1])):
                 await self._mass_sender(config['morning_hello'])
             elif strftime("%H:%M") in config['evening']:
                 await self._mass_sender(config['evening_hello'])

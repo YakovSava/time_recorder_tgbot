@@ -15,12 +15,13 @@ class Database:
     async def _create_table(self) -> None:
         await self._cursor.execute("""CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
-            name TEXT
+            name TEXT,
+            injob INT
         )""")
         await self._db.commit()
 
     async def reg(self, id:int, name:str) -> None:
-        await self._cursor.execute("""INSERT INTO users VALUES (?, ?)""", (str(id), name))
+        await self._cursor.execute("""INSERT INTO users VALUES (?, ?, 0)""", (str(id), name))
         await self._db.commit()
 
     async def delete(self, id:int) -> None:
