@@ -1,6 +1,12 @@
 from time import strptime, strftime, struct_time,\
-    mktime, gmtime, time
+    mktime as old_mktime, gmtime as old_gmtime, time
 from asyncio import gather, create_task
+
+def gmtime(data:float) -> struct_time:
+    return old_gmtime(data)
+
+def mktime(data:struct_time) -> float:
+    return old_mktime(data)+(2*3600)
 
 def _today(day:str) -> bool:
     return strftime("%H:%M %d.%m.%y", gmtime(time())).endswith(day)
@@ -107,7 +113,7 @@ def _count_all_the_times_in_all_the_lists(obj:list | float) -> float:
     res = 0.0
     for con, dis in obj:
         res += _to_unix(dis) - _to_unix(con)
-    return abs(round((res / 3600), 2)) if round((res / 3600) < 0) else round(res / 3600)
+    return round((res / 3600), 2)
 
 def _comparison_con_and_discon_on_day(cons:list[str], discons:list[str]) -> tuple | list:
     if len(discons) == 0:

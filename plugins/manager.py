@@ -42,6 +42,7 @@ class Manager:
         for id in ids:
             if id['id'] not in self._noted_ids:
                 await self._sender(id['id'], text)
+                self._noted_ids.append(id['id'])
 
     async def _sender(self, id:int, text:str) -> None:
         await self._bot.send_message(chat_id=id, text=text)

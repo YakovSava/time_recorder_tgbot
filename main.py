@@ -52,20 +52,28 @@ async def reg_success(message:Message, state:FSMContext):
 @dp.message(F.text == "Я на работе!")
 async def in_job(message:Message):
     if await sqldb.exists(message.from_user.id):
-        id_acc:dict = await kvdb.exists(message.from_user.id)
-        id_acc['connects'].append(strftime("%H:%M %d.%m.%y"))
-        await kvdb.set(str(message.from_user.id), id_acc)
-        await message.answer('Мы записали что вы на работе!')
+        if (await sqldb.get(message.from_user.id))['injob']:
+            await message.answer('Вы уже на работе!')
+        else:
+            id_acc:dict = await kvdb.exists(message.from_user.id)
+            id_acc['connects'].append(strftime("%H:%M %d.%m.%y"))
+            await kvdb.set(str(message.from_user.id), id_acc)
+            await sqldb.injob(message.from_user.id)
+            await message.answer('Мы записали что вы на работе!')
     else:
         await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE())
 
 @dp.message(F.text == "Я не на работе!")
 async def not_in_job(message:Message):
     if await sqldb.exists(message.from_user.id):
-        id_acc: dict = await kvdb.exists(message.from_user.id)
-        id_acc['discovers'].append(strftime("%H:%M %d.%m.%y"))
-        await kvdb.set(str(message.from_user.id), id_acc)
-        await message.answer("Мы записали что вы не на работе!")
+        if (await sqldb.get(message.from_user.id))['injob']:
+            id_acc: dict = await kvdb.exists(message.from_user.id)
+            id_acc['discovers'].append(strftime("%H:%M %d.%m.%y"))
+            await kvdb.set(str(message.from_user.id), id_acc)
+            await sqldb.notinjob(message.from_user.id)
+            await message.answer("Мы записали что вы не на работе!")
+        else:
+            await message.answer('Вы и так не на работе!')
     else:
         await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE())
 

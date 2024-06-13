@@ -38,3 +38,11 @@ class Database:
     async def get_all(self):
         await self._cursor.execute(f"SELECT * FROM users")
         return await self._cursor.fetchall()
+
+    async def injob(self, id:int) -> None:
+        await self._cursor.execute(f"UPDATE users SET injob=1 WHERE id = '{id}'")
+        await self._db.commit()
+
+    async def notinjob(self, id:int) -> None:
+        await self._cursor.execute(f"UPDATE users SET injob=0 WHERE id = '{id}'")
+        await self._db.commit()
