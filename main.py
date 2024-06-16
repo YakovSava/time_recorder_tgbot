@@ -38,7 +38,7 @@ logger.log("Инициализирован менеджер")
 @dp.message(Command("start"), StateFilter(None))
 async def start_reg(message: Message, state:FSMContext):
     if await sqldb.exists(message.from_user.id):
-        await message.answer("Вы уже зарегистрированы в этом боте!")
+        await message.answer("Вы уже зарегистрированы в этом боте!", reply_markup=KeyboardDataClass.menu_keyboard)
     else:
         await message.answer("Привет! Это бот для учёта времени. Для начала давайте зарегистрируемся!\n\nКак вас зовут (ФИО)?", reply_markup=KeyboardDataClass.DELETE())
         await state.set_state(StartState.name)
@@ -48,6 +48,16 @@ async def reg_success(message:Message, state:FSMContext):
     await message.answer(f'Отлично! Вы зарегистрированы как "{message.text}"!\nВот кнопки по которым предоставляется функционал!', reply_markup=KeyboardDataClass.menu_keyboard)
     await sqldb.reg(int(message.from_user.id), message.text)
     await state.clear()
+
+@dp.message(F.text == "Узнать статус")
+async def check_status(message:Message):
+    if (await sqldb.exists(message.from_user.id)):
+        if (await sqldb.get(message.from_user.id))['injob']:
+            await message.answer('Вы на работе!')
+        else:
+            await message.answer('Вы не на работе!')
+    else:
+        await message.answer('Вы не зарегестрированы!\nНажмите сюда:\n\n/start', reply_markup=KeyboardDataClass.DELETE())
 
 @dp.message(F.text == "Я на работе!")
 async def in_job(message:Message):
@@ -82,7 +92,7 @@ async def stat_handler(message:Message):
     if await sqldb.exists(message.from_user.id):
         stat = (await calculate_times(await kvdb.get_all()))[str(message.from_user.id)]
         msg = "Вы проработали:\n"
-        for date, hours in stat.items():
+        for date, hours in stat.items()[-2:]:
             msg += f"{date} - {hours} часа"
         await message.answer(msg)
     else:

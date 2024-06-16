@@ -5,6 +5,7 @@ class KeyboardDataClass:
     menu_keyboard = ReplyKeyboardMarkup(keyboard=[
         [
             KeyboardButton(text="Я на работе!", callback_data="in_job"),
+            KeyboardButton(text="Узнать статус")
             KeyboardButton(text="Я не на работе!", callback_data="not_in_job")
         ],
         [
