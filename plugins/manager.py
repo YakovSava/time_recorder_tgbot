@@ -34,18 +34,23 @@ class Manager:
 
     async def admin_send_test(self):
         config = await self._manager_binder.get_config()
-        await self._mass_sender(config['tested_hello'])
+        await self._mass_sender(config['tested_hello'], test=True)
         return self._noted_ids
 
-    async def _mass_sender(self, text:str) -> None:
+    async def _mass_sender(self, text:str, test:bool=False) -> None:
         ids = await self._sqldb.get_all()
         for id in ids:
-            if id['id'] not in self._noted_ids:
+            if (id['id'] not in self._noted_ids) and (not id['injob']) and (not test):
                 await self._sender(id['id'], text)
                 self._noted_ids.append(id['id'])
+            elif test:
+                await self._sender(id['id'], f'Текст для {id["id"]}\nНа работе: {id["injob"]}\n{text}')
 
     async def _sender(self, id:int, text:str) -> None:
         await self._bot.send_message(chat_id=id, text=text)
 
     async def set_noted(self, id:int) -> None:
         self._noted_ids.append(id)
+        
+    def __del__(self):
+        print('Manager destructor called!')

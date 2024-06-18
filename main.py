@@ -40,7 +40,7 @@ async def start_reg(message: Message, state:FSMContext):
     if await sqldb.exists(message.from_user.id):
         await message.answer("Вы уже зарегистрированы в этом боте!", reply_markup=KeyboardDataClass.menu_keyboard)
     else:
-        await message.answer("Привет! Это бот для учёта времени. Для начала давайте зарегистрируемся!\n\nКак вас зовут (ФИО)?", reply_markup=KeyboardDataClass.DELETE())
+        await message.answer("Привет! Это бот для учёта времени. Для начала давайте зарегистрируемся!\n\nКак вас зовут (ФИО)?", reply_markup=KeyboardDataClass.DELETE)
         await state.set_state(StartState.name)
 
 @dp.message(StateFilter(StartState.name))
@@ -57,7 +57,7 @@ async def check_status(message:Message):
         else:
             await message.answer('Вы не на работе!')
     else:
-        await message.answer('Вы не зарегестрированы!\nНажмите сюда:\n\n/start', reply_markup=KeyboardDataClass.DELETE())
+        await message.answer('Вы не зарегестрированы!\nНажмите сюда:\n\n/start', reply_markup=KeyboardDataClass.DELETE)
 
 @dp.message(F.text == "Я на работе!")
 async def in_job(message:Message):
@@ -71,7 +71,7 @@ async def in_job(message:Message):
             await sqldb.injob(message.from_user.id)
             await message.answer('Мы записали что вы на работе!')
     else:
-        await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE())
+        await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE)
 
 @dp.message(F.text == "Я не на работе!")
 async def not_in_job(message:Message):
@@ -85,15 +85,15 @@ async def not_in_job(message:Message):
         else:
             await message.answer('Вы и так не на работе!')
     else:
-        await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE())
+        await message.answer("Вы не зарегистрированы и не можете пользоваться ботом!\nНажмите сюда:\n\n/start", reply_markup=KeyboardDataClass.DELETE)
 
 @dp.message(F.text == "Моя статистика")
 async def stat_handler(message:Message):
     if await sqldb.exists(message.from_user.id):
         stat = (await calculate_times(await kvdb.get_all()))[str(message.from_user.id)]
         msg = "Вы проработали:\n"
-        for date, hours in stat.items()[-2:]:
-            msg += f"{date} - {hours} часа"
+        for date, hours in list(stat.items())[-2:]:
+            msg += f"{date} - {hours} часа\n"
         await message.answer(msg)
     else:
         await message.answer('Я не знаю кто вы, потому не могу дать статистику!\nДавайте зарегистрируемся! Нажмите на:\n\n/start')

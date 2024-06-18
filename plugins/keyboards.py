@@ -1,11 +1,14 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 class KeyboardDataClass:
-    DELETE = ReplyKeyboardRemove
+    DELETE = ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text='/start')]],
+        resize_keyboard=True
+    )
     menu_keyboard = ReplyKeyboardMarkup(keyboard=[
         [
             KeyboardButton(text="Я на работе!", callback_data="in_job"),
-            KeyboardButton(text="Узнать статус")
+            KeyboardButton(text="Узнать статус"),
             KeyboardButton(text="Я не на работе!", callback_data="not_in_job")
         ],
         [
