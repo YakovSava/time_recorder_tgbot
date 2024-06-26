@@ -1,6 +1,9 @@
 from time import strptime, strftime, struct_time,\
-    mktime as old_mktime, gmtime as old_gmtime, time
+    mktime as old_mktime, gmtime as old_gmtime, time as old_time
 from asyncio import gather, create_task
+
+def time():
+    return old_time()+(5*3600)
 
 def gmtime(data:float) -> struct_time:
     return old_gmtime(data)
@@ -85,7 +88,7 @@ def _to_unix(date:str) -> float:
     return mktime(strptime(date, "%H:%M %d.%m.%y"))
 
 def _not_disconnected(date:str="%d.%m.%y") -> str:
-    return strftime("%H:%M %d.%m.%y", strptime("18:00 "+date, "%H:%M %d.%m.%y"))
+    return strftime("%H:%M %d.%m.%y", strptime("19:00 "+date, "%H:%M %d.%m.%y"))
 
 def _not_connected(date:str="%d.%m.%y") -> str:
     return strftime("%H:%M %d.%m.%y", strptime("8:00 "+date, "%H:%M %d.%m.%y"))

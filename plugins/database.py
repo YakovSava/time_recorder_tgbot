@@ -5,12 +5,17 @@ class Database:
 
     def __init__(self, database_name:str="db.db"):
         run(self._async_init(database_name))
+        run(self._not_in_job())
 
     async def _async_init(self, db_name:str) -> None:
         self._db = await connect(database=db_name, check_same_thread=False)
         self._db.row_factory = Row
         self._cursor = await self._db.cursor()
         await self._create_table()
+
+    async def _not_in_job(self):
+        await self._cursor.execute('UPDATE users SET injob=0')
+        await self._db.commit()
 
     async def _create_table(self) -> None:
         await self._cursor.execute("""CREATE TABLE IF NOT EXISTS users (
